@@ -38,8 +38,8 @@ logical \46\46|\174\174|\41
 _op {addition}|{subtraction}|{multiplication}|{division}|{assignment}|{relational}|{logical}
 _keyword while|do|if|else|true|false|for|int|print|const|read|boolean|bool|void|float|double|string|continue|break|return
 _scientific ({_float}|{_integer})E[\53\55]?[0-9]*
-com1 (\57\57)[\40-\176]*(\57\57)
-com2 (\57\52)[\40-\176]*(\52\57)
+com1 ^(\57\57)[\40-\176]*[\n]$
+com2 ^(\57\52)[\40-\176]*(\52\57)$
 _comment {com1}|{com2}
 _pragmaSourceOn [\43]pragma[\40]source[\40](on)$ 
 _pragmaSourceOff [\43]pragma[\40]source[\40](off)$ 

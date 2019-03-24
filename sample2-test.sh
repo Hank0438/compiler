@@ -9,7 +9,7 @@ if [ "$scanner" == "" ]; then
     exit -1
 fi
 
-./scanner < sample.input > your.output 2>&1
+./scanner < sample2.input > your.output 2>&1
 diff_result=$(diff sample.output your.output)
 if [ "$diff_result" == "" ]; then
     echo '*******************************************************'
