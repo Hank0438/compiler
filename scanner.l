@@ -38,8 +38,8 @@ logical \46\46|\174\174|\41
 _op {addition}|{subtraction}|{multiplication}|{division}|{assignment}|{relational}|{logical}
 _keyword while|do|if|else|true|false|for|int|print|const|read|boolean|bool|void|float|double|string|continue|break|return
 _scientific ({_float}|{_integer})E[\53\55]?[0-9]*
-com1 ^(\57\57)[\40-\176]*[\n]$
-com2 ^(\57\52)[\40-\176]*(\52\57)$
+com1 (\57\57)[\40-\176]*
+com2 (\57\52)[\40-\176]*(\52\57)
 _comment {com1}|{com2}
 _pragmaSourceOn [\43]pragma[\40]source[\40](on)$ 
 _pragmaSourceOff [\43]pragma[\40]source[\40](off)$ 
@@ -48,7 +48,11 @@ _pragmaTokenOff [\43]pragma[\40]token[\40](off)$
 _pragmaStatisticOn [\43]pragma[\40]statistic[\40](on)$ 
 _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
 
+%Start COMMENT
 %%
+{com1} LIST; 
+{com2} LIST;
+
 {_pragmaSourceOn} {
 	LIST;
 	Opt_Source = 1;
@@ -77,10 +81,6 @@ _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
 {_pragmaStatisticOff} {
 	LIST;
 	Opt_Statistic = 0;
-}
-
-{_comment} {
-    LIST; 
 }
 
 {_scientific} {
@@ -148,9 +148,18 @@ _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
     buf[0] = '\0';
 }
 
-. { // Unrecognized character
-    fprintf(stderr, "Error at line %d: %s\n", linenum, yytext);
-    exit(1);
+
+<COMMENT>. {
+	LIST;
+}
+<COMMENT>"*/" {
+	LIST; 
+	BEGIN INITIAL;
+}
+<INITIAL>. ;
+<INITIAL>"/*" {
+	LIST; 
+	BEGIN COMMENT;
 }
 
 %%
