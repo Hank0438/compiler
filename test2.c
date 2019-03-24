@@ -2,4 +2,4 @@
 /*
  * This is a multiple lines comment.
  */
-/*This is a lines comment.*/
+/*This is a line comment.*/

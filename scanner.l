@@ -4,8 +4,6 @@
 #define MAX_STRING_LENGTH 256
 #define LIST                { strncat(buf, yytext, MAX_LINE_LENGTH); }
 #define tokenString(t, s)   { LIST; if (Opt_Token) printf("<%s:%s>\n", t, s); }
-#define checkRedundency()	{ }
-#define addFreqency()		{ }
 
 int Opt_Source = 1;
 int Opt_Token = 1;
@@ -38,77 +36,86 @@ logical \46\46|\174\174|\41
 _op {addition}|{subtraction}|{multiplication}|{division}|{assignment}|{relational}|{logical}
 _keyword while|do|if|else|true|false|for|int|print|const|read|boolean|bool|void|float|double|string|continue|break|return
 _scientific ({_float}|{_integer})E[\53\55]?[0-9]*
-com1 (\57\57)[\40-\176]*
-com2 (\57\52)[\40-\176]*(\52\57)
-_comment {com1}|{com2}
+_comment1 (\57\57)[\40-\176]*
 _pragmaSourceOn [\43]pragma[\40]source[\40](on)$ 
 _pragmaSourceOff [\43]pragma[\40]source[\40](off)$ 
 _pragmaTokenOn [\43]pragma[\40]token[\40](on)$ 
 _pragmaTokenOff [\43]pragma[\40]token[\40](off)$
 _pragmaStatisticOn [\43]pragma[\40]statistic[\40](on)$ 
 _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
+acsii [\40-\176]+ 
 
 %Start COMMENT
 %%
-{com1} LIST; 
-{com2} LIST;
+<COMMENT>. {
+	LIST;
+}
+<COMMENT>"*/" {
+	LIST; 
+	BEGIN INITIAL;
+}
+<INITIAL>"/*" {
+	LIST; 
+	BEGIN COMMENT;
+}
 
-{_pragmaSourceOn} {
+<INITIAL>{_comment1} LIST;
+
+<INITIAL>{_pragmaSourceOn} {
 	LIST;
 	Opt_Source = 1;
 }
 
-{_pragmaSourceOff} {
+<INITIAL>{_pragmaSourceOff} {
 	LIST;
 	Opt_Source = 0;
 }
 
-{_pragmaTokenOn} {
+<INITIAL>{_pragmaTokenOn} {
 	LIST;
 	Opt_Token = 1;
 }
 
-{_pragmaTokenOff} {
+<INITIAL>{_pragmaTokenOff} {
 	LIST;
 	Opt_Token = 0;
 }
 
-{_pragmaStatisticOn} {
+<INITIAL>{_pragmaStatisticOn} {
 	LIST;
 	Opt_Statistic = 1;
 }
 
-{_pragmaStatisticOff} {
+<INITIAL>{_pragmaStatisticOff} {
 	LIST;
 	Opt_Statistic = 0;
 }
 
-{_scientific} {
+<INITIAL>{_scientific} {
     tokenString("sci", yytext); 
 }
 
-{_keyword} {
+<INITIAL>{_keyword} {
     tokenString("kw", yytext); 
 }
 
-{_op} {
+<INITIAL>{_op} {
     tokenString("op", yytext); 
 }
 
-{_integer} {
+<INITIAL>{_integer} {
     tokenString("int", yytext); 
 }
 
-{_float} {
+<INITIAL>{_float} {
     tokenString("float", yytext); 
 }
 
-
-{_space} {
+<INITIAL>{_space} {
 	LIST;
 }
 
-{_string} {
+<INITIAL>{_string} {
 	LIST;
 	if (Opt_Token){
 		printf("<string:");
@@ -119,7 +126,7 @@ _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
 	}
 }
 
-{_identifier} { // record the id
+<INITIAL>{_identifier} { // record the id
 	for(int i=0; i<=id_idx; i++){
 		if (strcmp(yytext, ids[i]) == 0){
 			id_check = 1;
@@ -136,7 +143,7 @@ _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
 	tokenString("id", yytext);
 }
 
-{_delimiter} {
+<INITIAL>{_delimiter} {
     tokenString("delim", yytext);
 }
 
@@ -146,20 +153,6 @@ _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
         printf("%d:%s\n", linenum, buf);
     ++linenum;
     buf[0] = '\0';
-}
-
-
-<COMMENT>. {
-	LIST;
-}
-<COMMENT>"*/" {
-	LIST; 
-	BEGIN INITIAL;
-}
-<INITIAL>. ;
-<INITIAL>"/*" {
-	LIST; 
-	BEGIN COMMENT;
 }
 
 %%
