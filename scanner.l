@@ -49,7 +49,6 @@ _pragmaStatisticOn [\43]pragma[\40]statistic[\40](on)$
 _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
 
 %%
-[\40\t\n]?
 {_pragmaSourceOn} {
 	LIST;
 	Opt_Source = 1;
@@ -140,7 +139,6 @@ _pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
 {_delimiter} {
     tokenString("delim", yytext);
 }
-
 
 \n {
     LIST;
