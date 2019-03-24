@@ -37,12 +37,15 @@ _op {addition}|{subtraction}|{multiplication}|{division}|{assignment}|{relationa
 _keyword while|do|if|else|true|false|for|int|print|const|read|boolean|bool|void|float|double|string|continue|break|return
 _scientific ({_float}|{_integer})E[\53\55]?[0-9]*
 _comment1 (\57\57)[\40-\176]*
-_pragmaSourceOn [\43]pragma[\40]source[\40](on)$ 
-_pragmaSourceOff [\43]pragma[\40]source[\40](off)$ 
-_pragmaTokenOn [\43]pragma[\40]token[\40](on)$ 
-_pragmaTokenOff [\43]pragma[\40]token[\40](off)$
-_pragmaStatisticOn [\43]pragma[\40]statistic[\40](on)$ 
-_pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
+_comment2_up (\57\52)
+_comment2_down (\52\57)
+
+_pragmaSourceOn [\43]pragma[\40]source[\40](on)
+_pragmaSourceOff [\43]pragma[\40]source[\40](off) 
+_pragmaTokenOn [\43]pragma[\40]token[\40](on)
+_pragmaTokenOff [\43]pragma[\40]token[\40](off)
+_pragmaStatisticOn [\43]pragma[\40]statistic[\40](on)
+_pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)
 acsii [\40-\176]+ 
 
 %Start COMMENT
@@ -50,77 +53,81 @@ acsii [\40-\176]+
 <COMMENT>. {
 	LIST;
 }
-<COMMENT>"*/" {
+<COMMENT>{_comment2_down} {
 	LIST; 
 	BEGIN INITIAL;
 }
-<INITIAL>"/*" {
+{_comment2_up} {
 	LIST; 
 	BEGIN COMMENT;
 }
 
-<INITIAL>{_comment1} LIST;
+{_comment1} LIST;
 
-<INITIAL>{_pragmaSourceOn} {
+{_pragmaSourceOn} {
 	LIST;
 	Opt_Source = 1;
 }
 
-<INITIAL>{_pragmaSourceOff} {
+{_pragmaSourceOff} {
 	LIST;
 	Opt_Source = 0;
 }
 
-<INITIAL>{_pragmaTokenOn} {
+{_pragmaTokenOn} {
 	LIST;
 	Opt_Token = 1;
 }
 
-<INITIAL>{_pragmaTokenOff} {
+{_pragmaTokenOff} {
 	LIST;
 	Opt_Token = 0;
 }
 
-<INITIAL>{_pragmaStatisticOn} {
+{_pragmaStatisticOn} {
 	LIST;
 	Opt_Statistic = 1;
 }
 
-<INITIAL>{_pragmaStatisticOff} {
+{_pragmaStatisticOff} {
 	LIST;
 	Opt_Statistic = 0;
 }
 
-<INITIAL>{_scientific} {
+{_scientific} {
     tokenString("sci", yytext); 
 }
 
-<INITIAL>{_keyword} {
+{_keyword} {
     tokenString("kw", yytext); 
 }
 
-<INITIAL>{_op} {
+{_op} {
     tokenString("op", yytext); 
 }
 
-<INITIAL>{_integer} {
+{_integer} {
     tokenString("int", yytext); 
 }
 
-<INITIAL>{_float} {
+{_float} {
     tokenString("float", yytext); 
 }
 
-<INITIAL>{_space} {
+{_space} {
 	LIST;
 }
 
-<INITIAL>{_string} {
+{_string} {
 	LIST;
 	if (Opt_Token){
 		printf("<string:");
 		for(int i = 1; i < yyleng - 1; i++){
-			printf("%c", yytext[i]);
+			if (yytext[i] == 92 && yytext[i-1] != 92 && yytext[i+1] != 110 && yytext[i+1] != 116){
+				continue;
+			} else {
+				printf("%c", yytext[i]);	
+			}
 		};
 	    printf(">\n");	
 	}
@@ -143,7 +150,7 @@ acsii [\40-\176]+
 	tokenString("id", yytext);
 }
 
-<INITIAL>{_delimiter} {
+{_delimiter} {
     tokenString("delim", yytext);
 }
 
@@ -153,6 +160,11 @@ acsii [\40-\176]+
         printf("%d:%s\n", linenum, buf);
     ++linenum;
     buf[0] = '\0';
+}
+
+. { // Unrecognized character
+    fprintf(stderr, "Error at line %d: %s\n", linenum, yytext);
+    exit(1);
 }
 
 %%
@@ -177,10 +189,9 @@ int main( int argc, char **argv )
     if (Opt_Statistic)
     {
         printf("frequencies of identifiers:\n");
-        for(int i=0; i<id_idx; i++){
-        	printf("%s %d\n", ids[i], id_count[i]);
+    	for(int i=0; i<id_idx; i++){			
+        	printf("%s\t%d\n", ids[i], id_count[i]);
 		}
-        //format :  printf("%s\t%d\n");
     }
 	
     exit(0);
