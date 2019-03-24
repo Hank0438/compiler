@@ -41,15 +41,15 @@ _scientific ({_float}|{_integer})E[\53\55]?[0-9]*
 com1 (\57\57)[\40-\176]*(\57\57)
 com2 (\57\52)[\40-\176]*(\52\57)
 _comment {com1}|{com2}
-_pragmaSourceOn [\43]pragma[\40]source[\40]on
-_pragmaSourceOff [\43]pragma[\40]source[\40]off
-_pragmaTokenOn [\43]pragma[\40]token[\40]on
-_pragmaTokenOff [\43]pragma[\40]token[\40]off
-_pragmaStatisticOn [\43]pragma[\40]statistic[\40]on
-_pragmaStatisticOff [\43]pragma[\40]statistic[\40]off
+_pragmaSourceOn [\43]pragma[\40]source[\40](on)$ 
+_pragmaSourceOff [\43]pragma[\40]source[\40](off)$ 
+_pragmaTokenOn [\43]pragma[\40]token[\40](on)$ 
+_pragmaTokenOff [\43]pragma[\40]token[\40](off)$
+_pragmaStatisticOn [\43]pragma[\40]statistic[\40](on)$ 
+_pragmaStatisticOff [\43]pragma[\40]statistic[\40](off)$
 
 %%
-
+[\40\t\n]?
 {_pragmaSourceOn} {
 	LIST;
 	Opt_Source = 1;
@@ -150,7 +150,10 @@ _pragmaStatisticOff [\43]pragma[\40]statistic[\40]off
     buf[0] = '\0';
 }
 
-
+. { // Unrecognized character
+    fprintf(stderr, "Error at line %d: %s\n", linenum, yytext);
+    exit(1);
+}
 
 %%
 

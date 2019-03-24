@@ -8,7 +8,7 @@ int main(){
 	int a = 5;
 #pragma token off
 	float b = 01.010;
-#pragma token on	
+#pragma token on
 	int c = -1;
 #pragma token off
 	printf("hello world");
